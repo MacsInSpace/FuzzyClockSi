@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Builds a universal (arm64 + x86_64) Fuzzy Clock Si.app into ./build and ad-hoc signs it.
+# Builds a universal (arm64 + x86_64) Fuzzy Clock Si.app into ./build and signs it.
+# Ad-hoc by default; SIGN_ID="Developer ID Application: …" signs with hardened runtime for notarization.
 set -euo pipefail
 cd "${0:A:h}/.."
 
@@ -32,7 +33,13 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-codesign --force --sign - "$APP"
+SIGN_ID="${SIGN_ID:--}"
+if [[ "$SIGN_ID" == "-" ]]; then
+  codesign --force --sign - "$APP"
+else
+  codesign --force --options runtime --timestamp --sign "$SIGN_ID" "$APP"
+  codesign --verify --strict --verbose=2 "$APP"
+fi
 lipo -info "$APP/Contents/MacOS/FuzzyClockSi"
 du -sh "$APP"
 echo "Built: $APP"
