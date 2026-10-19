@@ -43,6 +43,7 @@ Out of scope: calendar events, chimes.
 | `Sources/FuzzyClockSi/` | AppKit status item, SwiftUI settings |
 | `Resources/Languages/English.lproj` | bundled English |
 | `scripts/build-app.sh` | universal build + bundle + sign |
+| `scripts/make-icon.swift`, `make-icns.sh` | draws the app icon in code → `Resources/AppIcon.icns` |
 | `scripts/login-agent.sh` | LaunchAgent install/uninstall/status (bootstrap/bootout) |
 
 ## Notes on the original (reverse-engineering findings)
