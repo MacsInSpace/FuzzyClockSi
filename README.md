@@ -16,6 +16,19 @@ open "build/Fuzzy Clock Si.app"
 
 No dependencies. macOS 13+.
 
+### Signing & notarization
+
+Release builds are signed with a Developer ID but **not notarized yet** (pending an Apple
+agreement renewal). On first launch: right-click → Open, or
+`xattr -dr com.apple.quarantine "/Applications/Fuzzy Clock Si.app"`.
+
+To produce a notarized build:
+
+```sh
+SIGN_ID="Developer ID Application: …" ./scripts/build-app.sh
+NOTARY_PROFILE=<profile> ./scripts/notarize.sh   # or APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
+```
+
 ## Features
 
 - Fuzzy time in the menu bar, updated on the minute boundary, wake, and clock/timezone changes
