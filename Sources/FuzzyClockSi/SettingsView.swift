@@ -1,0 +1,103 @@
+import AppKit
+import SwiftUI
+
+struct SettingsView: View {
+    @ObservedObject var settings = Settings.shared
+    let languages: [String: String]   // id -> display name
+    let onImport: () -> Void
+
+    var body: some View {
+        TabView {
+            general.tabItem { Label("General", systemImage: "clock") }
+            looks.tabItem { Label("Color & Font", systemImage: "textformat") }
+            SpecialsView().tabItem { Label("Specials", systemImage: "star") }
+        }
+        .padding(20)
+        .frame(width: 460, height: 340)
+    }
+
+    private var general: some View {
+        Form {
+            Picker("Language", selection: $settings.language) {
+                ForEach(languages.sorted { $0.value < $1.value }, id: \.key) { id, name in
+                    Text(name).tag(id)
+                }
+            }
+            Button("Import languages from FuzzyTime.app…", action: onImport)
+            Picker("Fuzziness", selection: $settings.fiveMinuteSteps) {
+                Text("Fuzzy \u{2014} 5-minute steps (\u{201C}five past one\u{201D})").tag(true)
+                Text("Fuzzier \u{2014} adds \u{201C}shortly after\u{201D} / \u{201C}nearly\u{201D}").tag(false)
+            }
+            Toggle("Uppercase", isOn: $settings.uppercase)
+            Toggle("Show day in menu bar", isOn: $settings.prefixWithDay)
+            LaunchAtLoginToggle()
+        }
+    }
+
+    private var looks: some View {
+        Form {
+            Toggle("Draw text with shadow", isOn: $settings.drawShadow)
+            Toggle("Custom text color", isOn: $settings.useCustomColor)
+            ColorPicker("Text color", selection: Binding(
+                get: { Color(nsColor: settings.customColor) },
+                set: { settings.customColor = NSColor($0) }), supportsOpacity: false)
+                .disabled(!settings.useCustomColor)
+            Toggle("Custom font", isOn: $settings.useCustomFont)
+            Picker("Font", selection: $settings.fontName) {
+                ForEach(NSFontManager.shared.availableFontFamilies, id: \.self) { Text($0).tag($0) }
+            }
+            .disabled(!settings.useCustomFont)
+            Stepper("Size: \(Int(settings.fontSize)) pt", value: $settings.fontSize, in: 9...18)
+                .disabled(!settings.useCustomFont)
+        }
+    }
+}
+
+private struct LaunchAtLoginToggle: View {
+    @State private var enabled = LoginAgent.isInstalled
+
+    var body: some View {
+        Toggle("Start at login", isOn: Binding(get: { enabled }, set: { on in
+            do {
+                if on { try LoginAgent.install() } else { try LoginAgent.uninstall() }
+            } catch {
+                NSLog("Start at login: \(error)")
+            }
+            enabled = LoginAgent.isInstalled
+        }))
+    }
+}
+
+private struct SpecialsView: View {
+    @ObservedObject var settings = Settings.shared
+    @State private var selection: Special.ID?
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Show custom text between two times (hh:mm, end exclusive).")
+                .font(.callout).foregroundStyle(.secondary)
+            Table(settings.specials, selection: $selection) {
+                TableColumn("Start") { s in field(s, \.start) }.width(60)
+                TableColumn("End") { s in field(s, \.end) }.width(60)
+                TableColumn("Text") { s in field(s, \.text) }
+            }
+            HStack {
+                Button("Add") { settings.specials.append(Special()) }
+                Button("Remove") { settings.specials.removeAll { $0.id == selection } }
+                    .disabled(selection == nil)
+            }
+        }
+    }
+
+    private func field(_ special: Special, _ key: WritableKeyPath<Special, String>) -> some View {
+        TextField("", text: Binding(
+            get: { special[keyPath: key] },
+            set: { value in
+                var all = settings.specials
+                if let i = all.firstIndex(where: { $0.id == special.id }) {
+                    all[i][keyPath: key] = value
+                    settings.specials = all
+                }
+            }))
+    }
+}
