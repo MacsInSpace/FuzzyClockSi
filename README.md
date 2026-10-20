@@ -44,8 +44,15 @@ NOTARY_PROFILE=<profile> ./scripts/notarize.sh   # or APPLE_ID / APPLE_PASSWORD 
   `scripts/login-agent.sh install [app path] | uninstall | status`. Single-instance, so a
   duplicate launch just quits.
 - `--print [HH:MM]` instead of an AppleScript dictionary
+- **Settings → About**: version, project link, acknowledgements
 
 Out of scope: calendar events, chimes.
+
+## Acknowledgements
+
+- **FuzzyClock** by Guido Neitzer, the original fuzzy menu bar clock and the inspiration for this one.
+- **FuzzyTime** by Marcus Olovsson, which this app replaces; its language files can be imported
+  for personal use.
 
 ## Layout
 

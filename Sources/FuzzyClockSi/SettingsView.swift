@@ -11,6 +11,7 @@ struct SettingsView: View {
             general.tabItem { Label("General", systemImage: "clock") }
             looks.tabItem { Label("Color & Font", systemImage: "textformat") }
             SpecialsView().tabItem { Label("Specials", systemImage: "star") }
+            AboutView().tabItem { Label("About", systemImage: "info.circle") }
         }
         .padding(20)
         .frame(width: 460, height: 340)
@@ -65,6 +66,35 @@ private struct LaunchAtLoginToggle: View {
             }
             enabled = LoginAgent.isInstalled
         }))
+    }
+}
+
+private struct AboutView: View {
+    private static let projectURL = URL(string: "https://github.com/MacsInSpace/FuzzyClockSi")!
+
+    private var version: String {
+        let info = Bundle.main.infoDictionary
+        guard let short = info?["CFBundleShortVersionString"] as? String else { return "development build" }
+        let build = info?["CFBundleVersion"] as? String
+        return build.map { "\(short) (\($0))" } ?? short
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 64, height: 64)
+            Text("Fuzzy Clock Si").font(.title2.bold())
+            Text("Version \(version)").foregroundStyle(.secondary).textSelection(.enabled)
+            Link("github.com/MacsInSpace/FuzzyClockSi", destination: Self.projectURL)
+            Divider().padding(.vertical, 4)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Acknowledgements").font(.headline)
+                Text("Inspired by the original **FuzzyClock** by Guido Neitzer.")
+                Text("A clean-room replacement for **FuzzyTime** by Marcus Olovsson, whose language files can be imported for personal use.")
+            }
+            .font(.callout)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
