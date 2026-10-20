@@ -5,6 +5,13 @@ A clean-room, Apple Silicon–native (universal) replacement for **FuzzyTime** b
 
 Menu bar shows the time as words: "ten to eleven", "halb drei", "MON QUARTER PAST TWO".
 
+## Install
+
+Download the latest `FuzzyClockSi-<version>.zip` from
+[Releases](https://github.com/MacsInSpace/FuzzyClockSi/releases), unzip, and move
+`Fuzzy Clock Si.app` to /Applications (quit any running copy first). See
+[Signing & notarization](#signing--notarization) for the first-launch step.
+
 ## Build & run
 
 ```sh
