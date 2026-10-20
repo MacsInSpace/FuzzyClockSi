@@ -3,11 +3,14 @@ import Combine
 import FuzzyCore
 import SwiftUI
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let settings = Settings.shared
     private var statusItem: NSStatusItem!
     private var languages: [Language] = []
     private var timer: Timer?
+    private var menuClockTimer: Timer?
+    private let exactTimeItem = NSMenuItem()
+    private let exactDateItem = NSMenuItem()
     private var settingsWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
 
@@ -80,6 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             attrs[.shadow] = shadow
         }
         button.attributedTitle = NSAttributedString(string: currentText(), attributes: attrs)
+        button.toolTip = Date().formatted(date: .complete, time: .shortened)
     }
 
     /// Fires on each minute boundary; tolerance keeps wakeups cheap.
@@ -97,11 +101,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.delegate = self
+        menu.autoenablesItems = false   // keep the exact time/date lines in normal (not greyed) text
+        menu.addItem(exactTimeItem)
+        menu.addItem(exactDateItem)
+        menu.addItem(.separator())
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Fuzzy Clock Si", action: #selector(NSApplication.terminate(_:)),
                      keyEquivalent: "q")
         return menu
+    }
+
+    // Exact time ticks every second only while the menu is open.
+    func menuWillOpen(_ menu: NSMenu) {
+        updateExactTime()
+        let nextSecond = Date(timeIntervalSinceReferenceDate: Date().timeIntervalSinceReferenceDate.rounded(.down) + 1)
+        let t = Timer(fire: nextSecond, interval: 1, repeats: true) { [weak self] _ in self?.updateExactTime() }
+        RunLoop.main.add(t, forMode: .common)
+        menuClockTimer = t
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        menuClockTimer?.invalidate()
+        menuClockTimer = nil
+    }
+
+    private func updateExactTime() {
+        let now = Date()
+        exactTimeItem.attributedTitle = NSAttributedString(
+            string: now.formatted(date: .omitted, time: .standard),
+            attributes: [.font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .semibold)])
+        exactDateItem.title = now.formatted(date: .complete, time: .omitted)
     }
 
     @objc private func openSettings() {

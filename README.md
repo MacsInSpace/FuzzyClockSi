@@ -32,6 +32,7 @@ NOTARY_PROFILE=<profile> ./scripts/notarize.sh   # or APPLE_ID / APPLE_PASSWORD 
 ## Features
 
 - Fuzzy time in the menu bar, updated on the minute boundary, wake, and clock/timezone changes
+- Exact time: hover the clock for date and time, or open the menu for a live clock with seconds
 - Languages: English bundled; **Settings → Import languages from FuzzyTime.app** copies the
   original's 60+ language/dialect folders into
   `~/Library/Application Support/FuzzyClockSi/Languages` (for personal use: that data is the
